@@ -28,7 +28,7 @@
 %   7.  Creates different plots based on control law in use.  Fixed error 
 %       in current limiter. (OPAS3axisFinal, June 05) 
 %==========================================================================
-function OPAS 
+function [xi,to,taBD,ta,qi] = OPASv3
 close all;warning off MATLAB:singularMatrix;%clc 
 start = clock; %Store starting time for run time calculation 
 %========================================================================== 
@@ -69,12 +69,15 @@ Lv   = 2*pi/180;        %Elevation Angle required to see the S/C (rad)
 %========================================================================== 
 eYd = eY0+0; %Epoch Year Desired 
 eDd = eD0+0; %Epoch Day Desired 
-eHd = 01;    %Epoch Hour Desired 
-eMd = 40;    %Epoch Minute Desired 
-eSd = 00;    %Epoch Second Desired  
-etf = eSd+60*(eMd+60*(eHd+24*(eDd+365.25*eYd))); %Epoch Time Final 
-eti = 60*(60*(24*(eD0+365.25*eY0)));             %Epoch Time Initial  
-tfo = etf-eti; %Simulation Stop Time 
+
+%this time determination method is currently being overriden in orbit prop
+%eHd = 01;    %Epoch Hour Desired 
+%eMd = 40;    %Epoch Minute Desired 
+%eSd = 00;    %Epoch Second Desired  
+%etf = eSd+60*(eMd+60*(eHd+24*(eDd+365.25*eYd))); %Epoch Time Final(seconds)
+
+eti = 60*(60*(24*(eD0+365.25*eY0)));             %Epoch Time Initial(seconds) 
+%tfo = etf-eti; %Simulation Stop Time (seconds)
 %========================================================================== 
 %Calculation of Time from Vernal Equinox 
 %==========================================================================  
@@ -86,7 +89,7 @@ Sve = 00; %Epoch Second of Vernal Equinox
 tve = Sve+60*(Mve+60*(Hve+24*(Dve+365.25*Yve))); %Epoch Time of Vernal Equinox  
 veo = 0;%-5.39; %Vernal Equinox Offset due to Equinox not happening @ 0:00 GMT  
 dti = eti-tve; %Initial Change in Time from Vernal Equinox 
-dtf = etf-tve; %Final Change in Time from Vernal Equinox 
+%dtf = etf-tve; %Final Change in Time from Vernal Equinox (not being used)
 %========================================================================== 
 %Initial Condition Calculation 
 %==========================================================================  
@@ -107,10 +110,11 @@ nuD0 = v0*cos(y0)/r0;              %Angular Velocity (rad/sec)
 state0 = [n0;nD0;a0;e0;i0;Om0;om0;nu0;nuD0;r0;rD0]; %Initial State  
 %========================================================================== 
 %Orbit Propagation 
-%==========================================================================  
-tfo = .3*pi*sqrt(a0^3/mu); %Final Time for Orbit Propagator 
+%========================================================================== 
+T = 2*pi*sqrt(a0^3/mu); %Orbital period
+tfo = 2*T; %set sim time with number of orbits
 options = odeset('RelTol', 1e-4); 
-[to,xo] = ode45(@oDiffEq,[t0o,tfo],state0,[],mu,J2,nD20,Re);  
+[to,xo] = ode45(@oDiffEq,[t0o,tfo],state0,[],mu,J2,nD20,Re);
 mm  = xo(:,1);  %Mean Motion (rad/s) 
 nD  = xo(:,2);  %First Derivative of Mean Motion (rad/s2) 
 a   = xo(:,3);  %Semi-Major Axis (km) 
@@ -168,7 +172,7 @@ grid on
 [m,n]=size(longm); 
 for ndx=1:n      
     for mdx=2:m         
-        if longm(mdx,ndx)==0 & longm(mdx-1,ndx)~=0             
+        if longm(mdx,ndx)==0 && longm(mdx-1,ndx)~=0             
             for k=1:(mdx-1)                 
                 longp(k)=longm(k,ndx);                 
                 latp(k)=latm(k,ndx);             
@@ -191,7 +195,7 @@ gai=r2gai(xi,Re,Lv);
 if n>1      
     for ndx=1:n         
         for mdx=2:m             
-            if galo(mdx,ndx)==0 & galo(mdx-1,ndx)~=0                 
+            if galo(mdx,ndx)==0 && galo(mdx-1,ndx)~=0                 
                 for k=1:(mdx-1)                     
                     galop(k)=galo(k,ndx);                     
                     galap(k)=gala(k,ndx);                 
@@ -228,11 +232,11 @@ set(get(a1,'Title'),'FontWeight','bold','Color','k')
 %S/C Properties------------------------------------------------------------ 
 m = 1.00; %Mass (kg) 
 l = 0.10; %Length (m) 
-w = 0.09; %Width (m) 
-h = 0.11; %Height (m)  
+w = 0.10; %Width (m) 
+h = 0.10; %Height (m)  
 
-% I = 1/12*m*[(h^2+w^2);(l^2+h^2);(w^2+l^2)]; %Mass Moments of Inertia (kgm^2) 
-I = [8.817e-4; 9.804e-4; 10.35e-4];         %MMI from IDEAS model of CP2 
+I = 1/12*m*[(h^2+w^2);(l^2+h^2);(w^2+l^2)]; %Mass Moments of Inertia (kgm^2) 
+% I = [8.817e-4; 9.804e-4; 10.35e-4];         %MMI from IDEAS model of CP2 
 K  = [(I(2)-I(3))/I(1);       
       (I(3)-I(1))/I(2);       
       (I(1)-I(2))/I(3)]; 
@@ -253,7 +257,7 @@ state0 = [w0 q0];           %Initial State
 
 %Desired State------------------------------------------------------------- 
 frame = 0;         %0 if desidred given in inertial, 1 for orbital 
-switch 5           %Desired Quaternions (frame defined above)  
+switch 4           %Desired Quaternions (frame defined above)  
     case 1, qd = [1 0 0 0];                  %180 about b1  
     case 2, qd = [0 1 0 0];                  %180 about b2  
     case 3, qd = [0 0 1 0];                  %180 about b3          
@@ -309,12 +313,13 @@ StDvQ = 1e-2;       %Std Dev in quaternion readings from star tracker
 Gres  = 1e-4;       %Resolution of gyros(rad/s) 
 Qres  = 1e-1;       %Resolution of quaternions 
 Ires  = 0.0012;     %Resolution of Magnetorquer Current (Amps/Step) 
-Ilim  = 0.3;        %Max current per torquer(Amps)  
+Ilim  = 0.025;      %Max current per torquer(Amps)  
 
 %Controller Parameters----------------------------------------------------- 
-N   = 54;           %Number of Torquer Loops 
-A   = .003;         %Average Area of Torquer Loops (m^2) 
-NA  = 0.150622;     %Sum of area enclosed by each loop (~N*A) 
+%N and A are obsolete figures
+% N   = 54;           %Number of Torquer Loops
+% A   = .003;         %Average Area of Torquer Loops (m^2) 
+NA  = 1.55;         %Sum of area enclosed by each loop (~N*A) 
 C   = 8e-3;         %Kyle's B-Dot Constant on CP2 (~Kk*CalData(:,1)) 
 Kk  = 20e3;         %C*128/5e-5; %B-Dot Controller Gain for CP3 (~C/CalData(:,1)) 
 C1  = 20e-3;        %Rate gain 
@@ -323,7 +328,7 @@ C2  = 10e-6;        %Quaternion gain
 %Sim w/ Torquing-----------------------------------------------------------  
 
 %Loop Initialization     
-tas  = t0a;     %attitude simulation time     
+tas  = t0a;     %attitude simulation time
 wbri = w0;      %Initial Omegas in the Body Frame during Readings 
 qri  = q0;      %Quaternions after torquers     
 ndx  = 1; mdx  = 1; idx  = 1;      
@@ -342,7 +347,7 @@ while tas < tfa
     
     % Mag-field and Attitude Measurments     
     Bb=Bi2Bb(to,Bi,tar,qr);     %Mag-Field in Body Frame during Readings (Tesla)     
-    if (test==1 | test==2 | test==4)         
+    if (test==1 || test==2 || test==4)         
         Bbm = Bb;               %Measured Mag-Field (no error)         
         wbrn = wbr(2,:);        %Measured angular rates (no error)         
         qrn = qr(2,:);          %Measured quaternions (no error)     
@@ -403,7 +408,7 @@ while tas < tfa
      
      %%%%%%%%%%%%%%% Current Limiter %%%%%%%%%%%%%%%%     
      Ic   = roundto(mub/(NA),Ires);      %Current requested for the Torquers (Amps)     
-     while abs(Ic(1))>Ilim | abs(Ic(2))>Ilim | abs(Ic(3))>Ilim         
+     while abs(Ic(1))>Ilim || abs(Ic(2))>Ilim || abs(Ic(3))>Ilim         
          Ic   = roundto(Ic./2,Ires);     %Current provided to torquers %         
      %    disp('clip')     
      end
@@ -421,7 +426,7 @@ while tas < tfa
      
     %--Convergence Tests--     
     if test<=3      % Three-axis deadband shutoff         
-        if norm(we)<1e-3 & 2*180/pi*acos(qe(4))<4 
+        if norm(we)<1e-3 && 2*180/pi*acos(qe(4))<4 
             %             disp('Deadband')             
             mub = [0;0;0];         
         end
@@ -506,12 +511,12 @@ else     a1=axes('parent',f2,'units','normalized','position',[.03 .55 .3 .4],'ne
     plot(ta./60,qi);     
     title('f) Inertial Quaternions','FontWeight','Bold','Color','k');set(gca,'YLim',[-1 1]) 
 end
-set(a1,'XLim',[0 tas./60],'xgrid','on','ygrid','on','Color','w','xcolor','k','ycolor','k','zcol or','k'); 
-set(a2,'XLim',[0 tas./60],'xgrid','on','ygrid','on','Color','w','xcolor','k','ycolor','k','zcol or','k'); 
-set(a3,'XLim',[0 tas./60],'xgrid','on','ygrid','on','Color','w','xcolor','k','ycolor','k','zcol or','k'); 
-set(a4,'XLim',[0 tas./60],'xgrid','on','ygrid','on','Color','w','xcolor','k','ycolor','k','zcol or','k'); 
-set(a5,'XLim',[0 tas./60],'xgrid','on','ygrid','on','Color','w','xcolor','k','ycolor','k','zcol or','k'); 
-set(a6,'XLim',[0 tas./60],'xgrid','on','ygrid','on','Color','w','xcolor','k','ycolor','k','zcol or','k');
+set(a1,'XLim',[0 tas./60],'xgrid','on','ygrid','on','Color','w','xcolor','k','ycolor','k','zcolor','k'); 
+set(a2,'XLim',[0 tas./60],'xgrid','on','ygrid','on','Color','w','xcolor','k','ycolor','k','zcolor','k'); 
+set(a3,'XLim',[0 tas./60],'xgrid','on','ygrid','on','Color','w','xcolor','k','ycolor','k','zcolor','k'); 
+set(a4,'XLim',[0 tas./60],'xgrid','on','ygrid','on','Color','w','xcolor','k','ycolor','k','zcolor','k'); 
+set(a5,'XLim',[0 tas./60],'xgrid','on','ygrid','on','Color','w','xcolor','k','ycolor','k','zcolor','k'); 
+set(a6,'XLim',[0 tas./60],'xgrid','on','ygrid','on','Color','w','xcolor','k','ycolor','k','zcolor','k');
 
 disp('Run Time(s)');disp(etime(clock,start))
 
@@ -529,5 +534,4 @@ disp(qea(end-1,:))
 disp('Pointing Accuracy (deg)') 
 disp(2*180/pi*acos(qea((end-1),4))) 
 beep
-
- 
+end
