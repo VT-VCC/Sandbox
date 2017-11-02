@@ -1,3 +1,4 @@
+%Test comment 11-2-2017
 %========================================================================== 
 %========================================================================== 
 %   Author:     Erick Sturm 
@@ -67,8 +68,8 @@ Lv   = 2*pi/180;        %Elevation Angle required to see the S/C (rad)
 %========================================================================== 
 %Define the Final Time 
 %========================================================================== 
-eYd = eY0+0; %Epoch Year Desired 
-eDd = eD0+0; %Epoch Day Desired 
+%eYd = eY0+0; %Epoch Year Desired 
+%eDd = eD0+0; %Epoch Day Desired 
 
 %this time determination method is currently being overriden in orbit prop
 %eHd = 01;    %Epoch Hour Desired 
@@ -262,7 +263,7 @@ switch 4           %Desired Quaternions (frame defined above)
     case 2, qd = [0 1 0 0];                  %180 about b2  
     case 3, qd = [0 0 1 0];                  %180 about b3          
     case 4, qd = [0 0 0 1];                  %Alligned  
-    case 5, qd = [0.5 0.5 0.5 0.5];          %120 about [1 1 1]     
+    case 5, qd = [0.5 0.5 0.5 0.5igr];          %120 about [1 1 1]     
     case 6, qd = [0 0 sqrt(2)/2 sqrt(2)/2];  %90 about b3     
     case 7, qd = [0 sqrt(2)/2 0 sqrt(2)/2];  %90 about b2     
     case 8, qd = [sqrt(2)/2 0 0 sqrt(2)/2];  %90 about b1 
@@ -505,7 +506,7 @@ else     a1=axes('parent',f2,'units','normalized','position',[.03 .55 .3 .4],'ne
     a5=axes('parent',f2,'units','normalized','position',[.37 .05 .3 .4],'nextplot','add'); 
     %     plot(ta./60,[wb sqrt(wb(:,1).^2+wb(:,2).^2+wb(:,3).^2)]);  %Includes magnitude      
     plot(ta./60,wb);     
-    set(gca,'YLim',[-.01 .01],'YTick',-.01:0.002:.01);     
+    set(gca,'YLim',[-.1 .1],'YTick',-.1:0.02:.1);     
     title('e) Inertial Angular Rates (rad/s)','FontWeight','Bold','Color','k');     
     a6=axes('parent',f2,'units','normalized','position',[.7 .05 .3 .4],'nextplot','add');     
     plot(ta./60,qi);     
