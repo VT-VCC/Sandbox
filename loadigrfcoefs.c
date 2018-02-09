@@ -1,3 +1,6 @@
+//Written by Rohan J. Dani
+//loads the coefficients in the igrf model
+//and returns matrices g and h from igrfcoefs file
 #include <time.h>
 #include <string.h>
 #include <string>
@@ -5,9 +8,22 @@
 #include <errno.h>
 #include <vector>
 
+void createMatrix(std::vector<int> x) {
+  for(i = 0; i < nrows; ++i)
+{
+   for(j = 0; j < ncols ; ++j)
+   {
+      printf("%d\t",x[i][j]);
+   }
+printf("\n");
+}
+}
+
 int loadigrfcoefs(std::string timeString) {
-//loads the coefficients in the igrf model
-//and returns matrices g and h from igrfcoefs file
+  int lastepoch;
+  int nextepoch;
+  std::vector<int> g;
+  std::vector<int> h;
   std::vector<string> timeVector;
   FILE *fp;
 
@@ -34,7 +50,19 @@ int loadigrfcoefs(std::string timeString) {
 
   //check time validity
 
-  for(int j; j < )
+  if(time < years[1] || time > years[strlen[years]]) {
+    perror("igrf:timeOutofRange, it is only valid between beginning and end of years");
+  }
+
+  for(int j = 0; j < (years - time)); ++j) {
+    if ((years-time) == 1){
+      lastepoch++;
+    }
+  }
+  nextepoch = lastepoch + 1;
+
+  g = createMatrix(g);
+  h = createMatrix(h);
 
 
 }

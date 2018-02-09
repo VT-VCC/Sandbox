@@ -1,3 +1,5 @@
+//Written by Rohan J. Dani
+//Get Taylor series
 struct taylorStruct {
   int ySin;
   int yCos;
