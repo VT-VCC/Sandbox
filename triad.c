@@ -1,3 +1,4 @@
+//Written by Rohan J. Dani
 #include <vector>
 #define std::vector;
 
@@ -22,8 +23,12 @@ void triad(vector<int> v1b,vector<int> v2b,vector<int> vli, vector<int> v2i) {
   a=t1b.size();
     if a[1]==1 {
       //don't understand
+      //Rbt=[t1b',t2b',t3b'];
+      //Rit=[t1i',t2i',t3i'];
     }
     else {
+      //Rbt=[t1b,t2b,t3b];
+      //Rit=[t1i,t2i,t3i];
       //don't understand
     }
     Rbi = Rbt*Rit; //don't understand
